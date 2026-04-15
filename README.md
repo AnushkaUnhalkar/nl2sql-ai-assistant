@@ -35,20 +35,33 @@ The **NL2SQL AI Assistant** allows users to ask questions in plain English and a
 
 ```
 nl2sql-project/
-│── app/
-│   ├── main.py
-│   ├── database.py
-│   ├── vanna_client.py
-│   └── services/
-│       └── nl2sql_service.py
 │
-│── scripts/
-│   └── setup_database.py
+├── app/
+│   ├── core/                     # 🔥 Core logic layer (modular)
+│   │   ├── llm.py               # Gemini (SQL generation + summary)
+│   │   ├── db.py                # SQLite execution
+│   │   ├── validator.py        # SQL safety validation
+│   │   ├── chart.py            # Chart generation (base64)
+│   │   └── vanna_agent.py      # (Optional) Vanna integration
+│   │
+│   ├── services/
+│   │   └── nl2sql_service.py   # Orchestration layer (pipeline)
+│   │
+│   ├── main.py                 # FastAPI entry point
+│   ├── database.py             # (Optional – legacy, can remove later)
+│   ├── setup_database.py       # DB initialization script
+│   ├── vanna_setup.py          # Vanna training setup
 │
-│── ui.py
-│── requirements.txt
-│── .env.example
-│── README.md
+├── ui.py                       # Streamlit frontend
+│
+├── healthcare.db               # SQLite database
+├── .env                        # API keys (NOT pushed)
+├── .gitignore                  # Ignore venv, pycache, etc.
+├── requirements.txt            # Dependencies
+├── README.md                   # Project documentation
+│
+└── venv/                       # Virtual environment (ignored)
+
 ```
 
 ---
