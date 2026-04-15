@@ -1,0 +1,161 @@
+# vanna_client.py
+# This module provides functions to interact with the Google Gemini API for generating SQL queries and executing them against the SQLite database. It uses the `google-genai` library to communicate with the Gemini API. 
+# Make sure to set the `GOOGLE_API_KEY` in your `.env` file before running the application. 
+
+# Purpose: This module contains the core logic for generating SQL queries from natural language questions using the Google Gemini API and executing those queries against the SQLite database. 
+# AI -> SQL
+# SQL -> Results
+
+
+# import os
+# import sqlite3
+# # from xml.parsers.expat import model
+# from dotenv import load_dotenv
+# import google.generativeai as genai
+
+
+# # Load API key from .env file
+# load_dotenv()
+# api_key = os.getenv("GOOGLE_API_KEY")
+
+
+# # check if API key is available, if not raise error
+# if not api_key:
+#     raise ValueError("GOOGLE_API_KEY not found in .env file")
+
+# # Create Gemini client
+# genai.configure(api_key=api_key)
+
+
+# def generate_sql(question: str):
+    
+#     # Prompt engg to guide Gemini in generating accurate SQL queries based on the provided question and database schema. 
+#     prompt = f"""
+# You are an expert SQL generator.
+
+# Database: SQLite
+
+# Table: patients
+# Columns:
+# - id
+# - name
+# - age
+# - gender
+# - disease
+# - doctor
+# - admission_date
+
+# Return ONLY SQL query.
+
+# Question: {question}
+
+# SQL:
+# """
+#     # Send the prompt to Gemini and get the generated SQL query 
+#     model = genai.GenerativeModel("gemini-1.5-flash")
+
+#     response = model.generate_content(prompt)
+
+#     sql = response.text.strip() # extracts output and removes any extra whitespace 
+
+
+#     # removes any markdown formatting if present to ensure we get clean SQL query
+#     if "```" in sql:
+#         sql = sql.split("```")[1]
+
+#     return sql
+
+
+# # Function to summarize the SQL query results in simple English for better user understanding. It sends the original question and the SQL results back to Gemini and asks it to explain the results in a user-friendly way.
+# def summarize_result(question: str, result: list):
+#     prompt = f"""
+# User Question: {question}
+
+# SQL Result:
+# {result}
+
+# Explain the result in simple English.
+# """
+
+#     model = genai.GenerativeModel("gemini-1.5-flash")
+#     response = model.generate_content(prompt)
+
+#     return response.text.strip()
+
+
+# # Function to validate the generated SQL query to ensure it's safe to execute.
+# def validate_sql(sql: str):
+#     sql = sql.strip().lower()
+
+#     # Allow only SELECT queries
+#     if not sql.startswith("select"):
+#         raise ValueError("Only SELECT queries are allowed")
+
+#     # Block dangerous keywords
+#     dangerous = ["drop", "delete", "update", "insert", "alter"]
+#     for word in dangerous:
+#         if word in sql:
+#             raise ValueError(f"Query contains dangerous keyword: {word}")
+
+#     return sql
+
+# # Function to execute the generated SQL query against the SQLite db and return results as list of dicts
+# def run_sql(sql: str):
+#     sql = validate_sql(sql) # validate sql before executing
+
+#     conn = sqlite3.connect("healthcare.db")
+#     cursor = conn.cursor() 
+
+#     cursor.execute(sql) # executes sql query
+#     rows = cursor.fetchall() # fetch all results
+
+#     columns = [desc[0] for desc in cursor.description] # get column names from cursor description to create dicts
+
+#     conn.close()
+
+#     return [dict(zip(columns, row)) for row in rows]
+
+
+
+
+# import matplotlib.pyplot as plt
+# import io
+# import base64
+
+
+# # Function to generate a simple bar chart from the SQL results if they contain numeric data. 
+# # It checks if the results have at least 2 columns, and if the second column contains numeric data, it creates a bar chart using Matplotlib and returns it as a Base64-encoded string that can be displayed in the frontend.
+# def generate_chart(data: list):
+#     if not data:
+#         return None
+
+#     keys = list(data[0].keys())
+
+#     # Need at least 2 columns
+#     if len(keys) < 2:
+#         return None
+
+#     x_key = keys[0]
+#     y_key = keys[1]
+
+#     try:
+#         x = [str(row[x_key]) for row in data]
+#         y = [float(row[y_key]) for row in data]
+#     except:
+#         return None
+
+#     plt.figure()
+#     plt.bar(x, y)
+#     plt.xticks(rotation=45)
+
+#     # Save chart to memory instead of file
+#     buffer = io.BytesIO()
+#     plt.savefig(buffer, format="png", bbox_inches="tight")
+#     plt.close()
+
+#     buffer.seek(0)
+
+#     # Convert to Base64
+#     image_base64 = base64.b64encode(buffer.read()).decode("utf-8")
+
+#     return f"data:image/png;base64,{image_base64}"
